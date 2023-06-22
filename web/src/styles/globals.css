@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-zinc-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-600;
+}
+
+.cm-scroller {
+  font-size: 15px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.ͼo,
+.cm-gutters,
+.cm-activeLineGutter,
+.cm-activeLine {
+  @apply bg-transparent !important;
+}
+
+.cm-focused {
+  @apply border-0 outline-none !important;
+}
