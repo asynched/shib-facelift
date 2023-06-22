@@ -1,21 +1,46 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { sql } from '@codemirror/lang-sql'
 import { getQueries, saveQuery } from '@/services/storage/queries'
 import { queriesStore } from '@/stores/queries'
+import { executeQuery, getRunnings } from '@/services/api/queries'
+import { getHistory, saveHistory } from '@/services/storage/history'
 
 import CodeMirror from '@uiw/react-codemirror'
 import { PlayIcon, BookmarkIcon, BeakerIcon } from '@heroicons/react/24/outline'
 import QueriesNavbar from '@/components/QueriesNavbar'
 import TablesNavbar from '@/components/TablesNavbar'
+import { useQuery } from '@tanstack/react-query'
+import { useObservable } from '@/hooks/common'
 
 export default function Home() {
+  const { history } = useObservable(queriesStore)
   const [query, setQuery] = useState('SELECT * FROM users')
+  const { data: runnings } = useQuery(['runnings'], getRunnings, {
+    initialData: [],
+    refetchInterval: 1_000,
+  })
+
+  const queryStatus = useMemo(() => {
+    const lastHistory = history[history.length - 1]
+    return runnings.some((running) => running.id === lastHistory.id)
+      ? 'Running'
+      : 'Idle'
+  }, [history, runnings])
 
   const handleSaveQuery = () => {
     saveQuery(query)
 
     queriesStore.update({
       saved: getQueries(),
+    })
+  }
+
+  const handleExecuteQuery = () => {
+    executeQuery(query).then((id) => {
+      saveHistory(id)
+      queriesStore.update({
+        history: getHistory(),
+      })
     })
   }
 
@@ -36,13 +61,16 @@ export default function Home() {
               <BookmarkIcon className="w-5 h-5" />
               <span>Save</span>
             </button>
-            <button className="flex items-center gap-1">
+            <button
+              onClick={handleExecuteQuery}
+              className="flex items-center gap-1"
+            >
               <PlayIcon className="w-5 h-5 text-green-500" />
               <span>Run</span>
             </button>
             <div className="flex items-center gap-1">
               <BeakerIcon className="w-5 h-5" />
-              <span>Idle</span>
+              <span>{queryStatus}</span>
             </div>
           </div>
           <CodeMirror

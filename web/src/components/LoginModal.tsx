@@ -60,7 +60,7 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
           </div>
           <button
             type="submit"
-            className="py-2 px-4 bg-gradient-to-br from-orange-500 to-pink-600 rounded font-medium transition ease-in-out hover:brightness-90"
+            className="py-2 px-4 bg-gradient-to-br from-orange-500 to-pink-600 rounded font-medium transition ease-in-out hover:shadow-lg hover:shadow-pink-600/25"
           >
             Login
           </button>

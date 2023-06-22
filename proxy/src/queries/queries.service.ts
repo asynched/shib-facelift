@@ -1,7 +1,10 @@
 import axios from 'axios'
 import { load } from 'cheerio'
 import { Agent } from 'https'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { type Cache } from 'cache-manager'
+import { Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { GetRunningQueriesDto } from '@/queries/queries.dto'
 
 type RunningsResponse = [string, string][]
 type ExecuteQueryResponse = {
@@ -17,6 +20,19 @@ type TableDescriptionResponse = [
   },
 ]
 
+type RunningQueriesResponse = {
+  queries: {
+    queryid: string
+    dbname: string
+    engine: string
+    querystring: string
+    results: {
+      resultid: string
+      executed_at: string
+    }[]
+  }[]
+}
+
 @Injectable()
 export class QueriesService {
   private readonly httpClient = axios.create({
@@ -25,6 +41,8 @@ export class QueriesService {
       rejectUnauthorized: false,
     }),
   })
+
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   async getRunnings() {
     const { data } = await this.httpClient.get<RunningsResponse>('/runnings')
@@ -36,14 +54,16 @@ export class QueriesService {
   }
 
   async executeQuery(token: string, query: string) {
+    const form = new URLSearchParams()
+
+    form.append('engineLabel', 'default')
+    form.append('dbname', 'default')
+    form.append('querystring', query)
+    form.append('authInfo', token)
+
     const { data } = await this.httpClient.post<ExecuteQueryResponse>(
       '/execute',
-      {
-        engineLabel: 'default',
-        dbname: 'default',
-        querystring: query,
-        authInfo: token,
-      },
+      form.toString(),
       {
         headers: {
           'X-Shib-Authinfo': token,
@@ -57,6 +77,12 @@ export class QueriesService {
   }
 
   async getTables() {
+    const cachedTables = await this.cacheManager.get<string[]>('tables')
+
+    if (cachedTables) {
+      return cachedTables
+    }
+
     const { data } = await this.httpClient.get<string[]>('/tables', {
       params: {
         engine: 'default',
@@ -64,10 +90,20 @@ export class QueriesService {
       },
     })
 
+    await this.cacheManager.set('tables', data, 60 * 60 * 24)
+
     return data
   }
 
   async getTableColumns(tableName: string) {
+    const cachedColumns = await this.cacheManager.get<
+      { name: string; type: string }[]
+    >(tableName)
+
+    if (cachedColumns) {
+      return cachedColumns
+    }
+
     const { data } = await this.httpClient.get<TableDescriptionResponse>(
       '/describe',
       {
@@ -93,8 +129,58 @@ export class QueriesService {
       })),
     )
 
-    return columns.filter(
+    const filteredColumns = columns.filter(
       (column) => Boolean(column.name) && Boolean(column.type),
     )
+
+    await this.cacheManager.set(tableName, filteredColumns, 60 * 60 * 24)
+
+    return filteredColumns
+  }
+
+  async getRunningQueries(token: string, dto: GetRunningQueriesDto) {
+    const params = new URLSearchParams()
+
+    dto.forEach((id) => params.append('ids', id))
+
+    const { data } = await this.httpClient.post<RunningQueriesResponse>(
+      '/queries',
+      params.toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Shib-Authinfo': token,
+        },
+      },
+    )
+
+    return data.queries
+      .map((query) => ({
+        id: query.queryid,
+        db: query.dbname,
+        engine: query.engine,
+        query: query.querystring,
+        results: query.results.map((result) => ({
+          id: result.resultid,
+          executedAt: new Date(result.executed_at),
+        })),
+      }))
+      .sort((a, b) => {
+        return (
+          new Date(b.results[0].executedAt).getTime() -
+          new Date(a.results[0].executedAt).getTime()
+        )
+      })
+  }
+
+  async getQueryPreview(resultId: string) {
+    const { data } = await this.httpClient.get<string>(
+      `/show/head/${resultId}`,
+      {
+        responseType: 'document',
+      },
+    )
+
+    return data
   }
 }

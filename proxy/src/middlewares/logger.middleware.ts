@@ -15,7 +15,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
       if (res.statusCode >= 400) {
         this.logger.error(msg)
-      } else if (time > 3_000) {
+      } else if (time > 2_000) {
         this.logger.warn(msg)
       } else {
         this.logger.log(msg)
