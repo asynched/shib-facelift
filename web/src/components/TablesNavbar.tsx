@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { cls } from '@/utils/classes'
 import { truncate } from '@/utils/string'
 import { getTableColumns, getTables } from '@/services/api/queries'
 
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import { TableCellsIcon } from '@heroicons/react/24/outline'
 
 export default function TablesNavbar() {
   const [filter, setFilter] = useState('')
@@ -12,7 +13,10 @@ export default function TablesNavbar() {
   })
 
   const filteredTables = useMemo(
-    () => tables.filter((table) => table.startsWith(filter)),
+    () =>
+      tables
+        .sort((a, b) => a.localeCompare(b))
+        .filter((table) => table.startsWith(filter)),
     [tables, filter],
   )
 
@@ -59,24 +63,33 @@ function TableDescription({ table }: TableDescriptionProps) {
   )
 
   return (
-    <div className={`flex flex-col ${isOpen ? 'text-white' : 'text-zinc-300'}`}>
+    <div className="flex flex-col">
       <button
         onClick={() => setIsOpen((open) => !open)}
-        className="flex gap-1 items-center"
+        className={cls(
+          'py-1 px-2 flex gap-1 items-center rounded transition ease-in-out hover:bg-zinc-800',
+          {
+            'bg-zinc-800': isOpen,
+          },
+        )}
       >
-        <ChevronRightIcon
-          className={`w-4 h-4 transition ease-in-out ${
-            isOpen ? 'rotate-90' : ''
-          }`}
-        />
-        <span>{truncate(table, 30)}</span>
+        <TableCellsIcon className="w-4 h-4 transition ease-in-out text-orange-500" />
+        <span>{truncate(table, 24)}</span>
       </button>
       {isOpen && (
-        <ul className="ml-6 mt-1 text-sm">
+        <ul className="ml-6 mt-1 grid gap-[.3rem]">
           {columns.map((column) => (
-            <li key={column.name} className="flex justify-between">
+            <li
+              key={column.name}
+              className="text-sm flex items-center justify-between"
+            >
               <span>{column.name}</span>
-              <span title={column.type}>{truncate(column.type, 16)}</span>
+              <span
+                className="py-[.125rem] text-xs bg-zinc-800 rounded px-2"
+                title={column.type}
+              >
+                {truncate(column.type, 16)}
+              </span>
             </li>
           ))}
         </ul>

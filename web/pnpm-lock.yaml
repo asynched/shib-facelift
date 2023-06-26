@@ -17,9 +17,11 @@ specifiers:
   eslint: ^8.38.0
   eslint-plugin-react-hooks: ^4.6.0
   eslint-plugin-react-refresh: ^0.3.4
+  highlight.js: ^11.8.0
   postcss: ^8.4.24
   react: ^18.2.0
   react-dom: ^18.2.0
+  react-toastify: ^9.1.3
   tailwindcss: ^3.3.2
   typescript: ^5.0.2
   vite: ^4.3.9
@@ -31,8 +33,10 @@ dependencies:
   '@tanstack/react-query': 4.29.15_biqbaboplfbrettd7655fr4n2y
   '@uiw/react-codemirror': 4.21.3_jvmr2or5a25xrufg4ucnxad2fy
   axios: 1.4.0
+  highlight.js: 11.8.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  react-toastify: 9.1.3_biqbaboplfbrettd7655fr4n2y
 
 devDependencies:
   '@tailwindcss/forms': 0.5.3_tailwindcss@3.3.2
@@ -292,10 +296,9 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@codemirror/autocomplete/6.8.0_jvoyrbe5yqq5xce333l7pi246e:
+  /@codemirror/autocomplete/6.8.0_@codemirror+view@6.13.2:
     resolution: {integrity: sha512-nTimZYnTYaZ5skAt+zlk8BD41GvjpWgtDni2K+BritA7Ed9A0aJWwo1ohTvwUEfHfhIVtcFSLEddVPkegw8C/Q==}
     peerDependencies:
-      '@codemirror/state': ^6.0.0
       '@codemirror/view': ^6.0.0
     dependencies:
       '@codemirror/language': 6.8.0
@@ -316,7 +319,7 @@ packages:
   /@codemirror/lang-sql/6.5.1_@codemirror+view@6.13.2:
     resolution: {integrity: sha512-epuXUn5ZcW3oVyjsQruMkuncKHEQ6X3pvFp4uI/pSPiudSS/3e7PsLCVmA/Ju8oNJPX0WO8eez9seau3e8gvhw==}
     dependencies:
-      '@codemirror/autocomplete': 6.8.0_jvoyrbe5yqq5xce333l7pi246e
+      '@codemirror/autocomplete': 6.8.0_@codemirror+view@6.13.2
       '@codemirror/language': 6.8.0
       '@codemirror/state': 6.2.1
       '@lezer/highlight': 1.1.6
@@ -903,7 +906,7 @@ packages:
     peerDependencies:
       '@codemirror/view': '>=6.0.0'
     dependencies:
-      '@codemirror/autocomplete': 6.8.0_jvoyrbe5yqq5xce333l7pi246e
+      '@codemirror/autocomplete': 6.8.0_@codemirror+view@6.13.2
       '@codemirror/commands': 6.2.4
       '@codemirror/language': 6.8.0
       '@codemirror/lint': 6.2.2
@@ -1122,10 +1125,15 @@ packages:
       fsevents: 2.3.2
     dev: true
 
+  /clsx/1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+    dev: false
+
   /codemirror/6.0.1:
     resolution: {integrity: sha512-J8j+nZ+CdWmIeFIGXEFbFPtpiYacFMDR8GlHK3IyHQJMCaVRfGx9NT+Hxivv1ckLWPvNdZqndbr/7lVhrf/Svg==}
     dependencies:
-      '@codemirror/autocomplete': 6.8.0_jvoyrbe5yqq5xce333l7pi246e
+      '@codemirror/autocomplete': 6.8.0_@codemirror+view@6.13.2
       '@codemirror/commands': 6.2.4
       '@codemirror/language': 6.8.0
       '@codemirror/lint': 6.2.2
@@ -1606,6 +1614,11 @@ packages:
       function-bind: 1.1.1
     dev: true
 
+  /highlight.js/11.8.0:
+    resolution: {integrity: sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==}
+    engines: {node: '>=12.0.0'}
+    dev: false
+
   /ignore/5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
@@ -2027,6 +2040,17 @@ packages:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /react-toastify/9.1.3_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-fPfb8ghtn/XMxw3LkxQBk3IyagNpF/LIKjOBflbexr2AWxAH1MJgvnESwEwBn9liLFXgTKWgBSdZpw9m4OTHTg==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      clsx: 1.2.1
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
 
   /react/18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}

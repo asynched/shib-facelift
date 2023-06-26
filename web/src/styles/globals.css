@@ -31,3 +31,11 @@
 .cm-focused {
   @apply border-0 outline-none !important;
 }
+
+.hljs {
+  @apply bg-transparent text-sm;
+}
+
+code.hljs {
+  @apply p-0 !important;
+}

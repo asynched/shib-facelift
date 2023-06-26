@@ -16,7 +16,7 @@ type Running = {
   runtime: string
 }
 
-export type RunningQuery = {
+export type ExecutedQuery = {
   db: string
   engine: string
   id: string
@@ -49,12 +49,12 @@ export const getRunnings = async () => {
   return data
 }
 
-export const getRunningQueries = async (ids: string[]) => {
+export const getExecutedQueries = async (ids: string[]) => {
   if (ids.length === 0) {
     return []
   }
 
-  const { data } = await httpClient.get<RunningQuery[]>('/queries', {
+  const { data } = await httpClient.get<ExecutedQuery[]>('/queries', {
     params: {
       ids: ids.join(','),
     },
@@ -67,4 +67,22 @@ export const getPreview = async (resultId: string) => {
   const { data } = await httpClient.get<string>(`/queries/results/${resultId}`)
 
   return data
+}
+
+// TODO: Fix this in the back-end, as it results in
+// shib giving 5xx errors.
+export const getResults = async (ids: string[]) => {
+  return []
+
+  if (ids.length === 0) {
+    return []
+  }
+
+  const { data } = await httpClient.get<any[]>(`/queries/results`, {
+    params: {
+      ids: ids.join(','),
+    },
+  })
+
+  return []
 }
