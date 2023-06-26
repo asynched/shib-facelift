@@ -23,6 +23,12 @@ export class QueriesController {
     return await this.queriesService.getRunningQueries(token, data.split(','))
   }
 
+  @Get('results')
+  @UseGuards(AuthGuard)
+  async getResults(@AuthToken() token: string, @Query('ids') ids: string) {
+    return await this.queriesService.getResults(token, ids.split(','))
+  }
+
   @Get('running')
   @UseGuards(AuthGuard)
   async getRunnings() {

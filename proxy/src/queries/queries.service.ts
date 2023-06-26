@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { type Cache } from 'cache-manager'
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { GetRunningQueriesDto } from '@/queries/queries.dto'
+import { unique } from '@/utils/arrays'
 
 type RunningsResponse = [string, string][]
 type ExecuteQueryResponse = {
@@ -20,6 +21,17 @@ type TableDescriptionResponse = [
   },
 ]
 
+type ResultsResponse = {
+  bytes: number | null
+  completed_at: string
+  error: string
+  executed_at: string
+  lines: number | null
+  resultid: string
+  state: 'done' | 'waiting' | 'error'
+  schema: { type: string; name: string }[]
+}
+
 type RunningQueriesResponse = {
   queries: {
     queryid: string
@@ -32,6 +44,19 @@ type RunningQueriesResponse = {
     }[]
   }[]
 }
+
+type RunningQuery = {
+  id: string
+  db: string
+  engine: string
+  query: string
+  results: {
+    id: string
+    executedAt: Date
+  }[]
+}
+
+const ONE_DAY = 60 * 60 * 24 * 1000
 
 @Injectable()
 export class QueriesService {
@@ -90,7 +115,7 @@ export class QueriesService {
       },
     })
 
-    await this.cacheManager.set('tables', data, 60 * 60 * 24)
+    await this.cacheManager.set('tables', data, ONE_DAY)
 
     return data
   }
@@ -98,7 +123,7 @@ export class QueriesService {
   async getTableColumns(tableName: string) {
     const cachedColumns = await this.cacheManager.get<
       { name: string; type: string }[]
-    >(tableName)
+    >(`tables/${tableName}`)
 
     if (cachedColumns) {
       return cachedColumns
@@ -133,7 +158,7 @@ export class QueriesService {
       (column) => Boolean(column.name) && Boolean(column.type),
     )
 
-    await this.cacheManager.set(tableName, filteredColumns, 60 * 60 * 24)
+    await this.cacheManager.set(`tables/${tableName}`, filteredColumns, ONE_DAY)
 
     return filteredColumns
   }
@@ -154,26 +179,43 @@ export class QueriesService {
       },
     )
 
-    return data.queries
-      .map((query) => ({
-        id: query.queryid,
-        db: query.dbname,
-        engine: query.engine,
-        query: query.querystring,
-        results: query.results.map((result) => ({
-          id: result.resultid,
-          executedAt: new Date(result.executed_at),
-        })),
-      }))
-      .sort((a, b) => {
-        return (
-          new Date(b.results[0].executedAt).getTime() -
-          new Date(a.results[0].executedAt).getTime()
-        )
-      })
+    const parsedQueries = data.queries.map((query) => ({
+      id: query.queryid,
+      db: query.dbname,
+      engine: query.engine,
+      query: query.querystring,
+      results: query.results.map((result) => ({
+        id: result.resultid,
+        executedAt: new Date(result.executed_at),
+      })),
+    }))
+
+    const cachedQueries = await this.cacheManager.get<RunningQuery[]>(
+      `queries/${token}/running`,
+    )
+
+    const queries = unique(
+      parsedQueries.concat(cachedQueries || []),
+      (q) => q.id,
+    ).sort(
+      (a, b) =>
+        b.results[0].executedAt.getTime() - a.results[0].executedAt.getTime(),
+    )
+
+    await this.cacheManager.set(`queries/${token}/running`, queries, ONE_DAY)
+
+    return queries
   }
 
   async getQueryPreview(resultId: string) {
+    const cachedResult = await this.cacheManager.get<string>(
+      `results/${resultId}`,
+    )
+
+    if (cachedResult) {
+      return cachedResult
+    }
+
     const { data } = await this.httpClient.get<string>(
       `/show/head/${resultId}`,
       {
@@ -181,6 +223,36 @@ export class QueriesService {
       },
     )
 
+    if (data) {
+      await this.cacheManager.set(`results/${resultId}`, data, ONE_DAY)
+    }
+
     return data
+  }
+
+  async getResults(token: string, ids: string[]) {
+    const params = new URLSearchParams()
+
+    ids.forEach((id) => params.append('ids', id))
+
+    const { data } = await this.httpClient.post<ResultsResponse[]>(
+      '/results',
+      params.toString(),
+      {
+        headers: {
+          'X-Shib-Authinfo': token,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    return data.map((result) => ({
+      id: result.resultid,
+      lines: result.lines,
+      bytes: result.bytes,
+      executedAt: new Date(result.executed_at),
+      state: result.state,
+      error: result.error,
+    }))
   }
 }
