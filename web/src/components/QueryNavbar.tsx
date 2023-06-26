@@ -51,7 +51,7 @@ export default function QueryNavbar() {
       {showModal && query && (
         <QueryResultModal query={query} onClose={() => setShowModal(false)} />
       )}
-      <nav className="w-[24rem] border-l border-zinc-800 p-4">
+      <nav className="w-[24rem] border-l border-zinc-800 p-4 max-h-screen overflow-y-auto">
         <h1 className="pr-1 text-4xl font-bold tracking-tighter bg-gradient-to-br from-orange-500 to-pink-600 bg-clip-text text-transparent">
           Your queries
         </h1>
