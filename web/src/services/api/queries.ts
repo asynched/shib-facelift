@@ -71,18 +71,18 @@ export const getPreview = async (resultId: string) => {
 
 // TODO: Fix this in the back-end, as it results in
 // shib giving 5xx errors.
-export const getResults = async (ids: string[]) => {
-  return []
+// export const getResults = async (_ids: string[]) => {
+//   return []
 
-  if (ids.length === 0) {
-    return []
-  }
+//   // if (ids.length === 0) {
+//   //   return []
+//   // }
 
-  const { data } = await httpClient.get<any[]>(`/queries/results`, {
-    params: {
-      ids: ids.join(','),
-    },
-  })
+//   // const { data } = await httpClient.get<any[]>(`/queries/results`, {
+//   //   params: {
+//   //     ids: ids.join(','),
+//   //   },
+//   // })
 
-  return []
-}
+//   // return []
+// }

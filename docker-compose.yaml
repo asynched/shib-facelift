@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+  web:
+    build: web
+    ports:
+      - 4173:4173
+    depends_on:
+      - proxy
+  proxy:
+    build: proxy
+    ports:
+      - 3000:3000

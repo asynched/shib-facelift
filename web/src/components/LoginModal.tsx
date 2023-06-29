@@ -5,6 +5,7 @@ import {
   setAuthToken,
 } from '@/services/api/auth'
 import { preventDefault } from '@/utils/ui'
+import { toast } from 'react-toastify'
 
 type LoginModalProps = {
   onLogin: (token: string) => unknown
@@ -17,11 +18,17 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
   })
 
   const handleLogin = async () => {
-    const data = await login(form)
+    try {
+      const data = await login(form)
 
-    saveTokenToLocalStorage(data.token)
-    setAuthToken(data.token)
-    onLogin(data.token)
+      saveTokenToLocalStorage(data.token)
+      setAuthToken(data.token)
+      onLogin(data.token)
+
+      toast.success('Logged in!')
+    } catch (err) {
+      toast.error('Invalid credentials (HTTP 401)')
+    }
   }
 
   return (

@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import parser from 'js-sql-parser'
 import { useMemo, useState } from 'react'
 import { sql } from '@codemirror/lang-sql'
 import { useQuery } from '@tanstack/react-query'
@@ -40,7 +43,23 @@ export default function Home() {
     })
   }
 
+  const parseAndValidateQuery = (query: string) => {
+    try {
+      parser.parse(query)
+      return null
+    } catch (err) {
+      return (err as Error).message
+    }
+  }
+
   const handleExecuteQuery = () => {
+    const err = parseAndValidateQuery(query)
+
+    if (err) {
+      toast.error(err)
+      return
+    }
+
     executeQuery(query)
       .then((id) => {
         saveHistory(id)
