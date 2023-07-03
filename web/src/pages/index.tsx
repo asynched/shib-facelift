@@ -30,6 +30,9 @@ export default function Home() {
 
   const queryStatus = useMemo(() => {
     const lastHistory = history[history.length - 1]
+
+    if (!lastHistory) return 'Idle'
+
     return runnings.some((running) => running.id === lastHistory.id)
       ? 'Running'
       : 'Idle'
